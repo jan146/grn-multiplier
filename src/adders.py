@@ -72,7 +72,7 @@ def get_half_adder() -> grn.grn:
         half_adder.add_gene(10, regulators, products)
     return half_adder
 
-def main():
+def run_half_adder():
     # Create half adder
     half_adder: grn.grn = get_half_adder()
     # Run simulation
@@ -86,6 +86,8 @@ def main():
         ],
         t_single = T_SINGLE,
     )
+
+def run_full_adder():
     # Create full adder
     full_adder: grn.grn = get_full_adder()
     # Run simulation
@@ -94,6 +96,10 @@ def main():
         list(itertools.product([INPUT_CONCENTRATION_MIN, INPUT_CONCENTRATION_MAX], repeat=len(full_adder.input_species_names))),
         t_single = T_SINGLE,
     )
+
+def main():
+    run_half_adder()
+    run_full_adder()
 
 if __name__ == "__main__":
     main()
