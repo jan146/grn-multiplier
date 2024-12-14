@@ -7,6 +7,7 @@ import numpy as np
 INPUT_CONCENTRATION_MIN: int = 0
 INPUT_CONCENTRATION_MAX: int = 100
 T_SINGLE: int = 250
+PLOT_ON: bool = False
 
 def get_full_adder() -> grn.grn:
     # Initialization
@@ -88,6 +89,7 @@ def run_half_adder():
         half_adder,
         input_combinations,
         t_single=T_SINGLE,
+        plot_on=PLOT_ON,
     )
     if not isinstance(Y, np.ndarray):
         raise Exception(f"Error: Y is not a numpy array {type(Y)=}")
@@ -104,6 +106,7 @@ def run_full_adder():
         full_adder,
         input_combinations,
         t_single=T_SINGLE,
+        plot_on=PLOT_ON,
     )
     if not isinstance(Y, np.ndarray):
         raise Exception(f"Error: Y is not a numpy array {type(Y)=}")
