@@ -10,6 +10,10 @@ InputList: TypeAlias = list[InputType]
 OutputType: TypeAlias = tuple[str, float]
 OutputList: TypeAlias = list[OutputType]
 
+def print_structured_output(structured_output: list[tuple[InputList, OutputList]]):
+    for inputs, outputs in structured_output:
+        print(f"{inputs} -> {outputs}")
+
 def get_structured_input_output(grn: grn.grn, input_combinations: list[tuple[int,...]], Y: npt.NDArray, t_single: int) -> list[tuple[InputList, OutputList]]:
     # Get sampling points (time axis)
     t_samples: npt.NDArray = get_t_samples(num_inputs=len(grn.input_species_names), t_single=t_single)

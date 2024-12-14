@@ -1,6 +1,6 @@
 import simulator
 import grn
-from src.utils import InputList, OutputList, get_regulators_list_and_products, get_structured_input_output
+from src.utils import InputList, OutputList, get_regulators_list_and_products, get_structured_input_output, print_structured_output
 import itertools
 import numpy as np
 
@@ -96,13 +96,13 @@ def main():
     print("Half adder:")
     half_adder: grn.grn = get_half_adder()
     results = run_grn(half_adder)
-    print(results)
+    print_structured_output(results)
     print()
     # Create & run full adder
     print("Full adder:")
     full_adder: grn.grn = get_full_adder()
     results = run_grn(full_adder)
-    print(results)
+    print_structured_output(results)
     print()
 
 if __name__ == "__main__":
