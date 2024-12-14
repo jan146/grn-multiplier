@@ -75,26 +75,30 @@ def get_half_adder() -> grn.grn:
 def run_half_adder():
     # Create half adder
     half_adder: grn.grn = get_half_adder()
+    # Prepare exhaustive list of input combinations
+    input_combinations: list[tuple[int,...]] = [
+        (INPUT_CONCENTRATION_MIN, INPUT_CONCENTRATION_MIN),
+        (INPUT_CONCENTRATION_MIN, INPUT_CONCENTRATION_MAX),
+        (INPUT_CONCENTRATION_MAX, INPUT_CONCENTRATION_MIN),
+        (INPUT_CONCENTRATION_MAX, INPUT_CONCENTRATION_MAX),
+    ]
     # Run simulation
     simulator.simulate_sequence(
         half_adder,
-        [
-            (INPUT_CONCENTRATION_MIN, INPUT_CONCENTRATION_MIN),
-            (INPUT_CONCENTRATION_MIN, INPUT_CONCENTRATION_MAX),
-            (INPUT_CONCENTRATION_MAX, INPUT_CONCENTRATION_MIN),
-            (INPUT_CONCENTRATION_MAX, INPUT_CONCENTRATION_MAX),
-        ],
-        t_single = T_SINGLE,
+        input_combinations,
+        t_single=T_SINGLE,
     )
 
 def run_full_adder():
     # Create full adder
     full_adder: grn.grn = get_full_adder()
+    # Prepare exhaustive list of input combinations
+    input_combinations: list[tuple[int,...]] = list(itertools.product([INPUT_CONCENTRATION_MIN, INPUT_CONCENTRATION_MAX], repeat=len(full_adder.input_species_names)))
     # Run simulation
     simulator.simulate_sequence(
         full_adder,
-        list(itertools.product([INPUT_CONCENTRATION_MIN, INPUT_CONCENTRATION_MAX], repeat=len(full_adder.input_species_names))),
-        t_single = T_SINGLE,
+        input_combinations,
+        t_single=T_SINGLE,
     )
 
 def main():
