@@ -74,19 +74,12 @@ def get_half_adder() -> grn.grn:
         half_adder.add_gene(10, regulators, products)
     return half_adder
 
-def run_half_adder():
-    # Create half adder
-    half_adder: grn.grn = get_half_adder()
+def run_grn(grn: grn.grn) -> list[tuple[InputList, OutputList]]:
     # Prepare exhaustive list of input combinations
-    input_combinations: list[tuple[int,...]] = [
-        (INPUT_CONCENTRATION_MIN, INPUT_CONCENTRATION_MIN),
-        (INPUT_CONCENTRATION_MIN, INPUT_CONCENTRATION_MAX),
-        (INPUT_CONCENTRATION_MAX, INPUT_CONCENTRATION_MIN),
-        (INPUT_CONCENTRATION_MAX, INPUT_CONCENTRATION_MAX),
-    ]
+    input_combinations: list[tuple[int,...]] = list(itertools.product([INPUT_CONCENTRATION_MIN, INPUT_CONCENTRATION_MAX], repeat=len(grn.input_species_names)))
     # Run simulation
     _, Y = simulator.simulate_sequence(
-        half_adder,
+        grn,
         input_combinations,
         t_single=T_SINGLE,
         plot_on=PLOT_ON,
@@ -94,28 +87,23 @@ def run_half_adder():
     if not isinstance(Y, np.ndarray):
         raise Exception(f"Error: Y is not a numpy array {type(Y)=}")
     # Get actually somewhat readable results
-    results: list[tuple[InputList, OutputList]] = get_structured_input_output(half_adder, input_combinations=input_combinations, Y=Y, t_single=T_SINGLE)
-
-def run_full_adder():
-    # Create full adder
-    full_adder: grn.grn = get_full_adder()
-    # Prepare exhaustive list of input combinations
-    input_combinations: list[tuple[int,...]] = list(itertools.product([INPUT_CONCENTRATION_MIN, INPUT_CONCENTRATION_MAX], repeat=len(full_adder.input_species_names)))
-    # Run simulation
-    _, Y = simulator.simulate_sequence(
-        full_adder,
-        input_combinations,
-        t_single=T_SINGLE,
-        plot_on=PLOT_ON,
-    )
-    if not isinstance(Y, np.ndarray):
-        raise Exception(f"Error: Y is not a numpy array {type(Y)=}")
-    # Get actually somewhat readable results
-    results: list[tuple[InputList, OutputList]] = get_structured_input_output(full_adder, input_combinations=input_combinations, Y=Y, t_single=T_SINGLE)
+    results: list[tuple[InputList, OutputList]] = get_structured_input_output(grn, input_combinations=input_combinations, Y=Y, t_single=T_SINGLE)
+    return results
 
 def main():
-    run_half_adder()
-    run_full_adder()
+    results: list[tuple[InputList, OutputList]]
+    # Create & run half adder
+    print("Half adder:")
+    half_adder: grn.grn = get_half_adder()
+    results = run_grn(half_adder)
+    print(results)
+    print()
+    # Create & run full adder
+    print("Full adder:")
+    full_adder: grn.grn = get_full_adder()
+    results = run_grn(full_adder)
+    print(results)
+    print()
 
 if __name__ == "__main__":
     main()
