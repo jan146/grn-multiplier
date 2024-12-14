@@ -3,6 +3,7 @@ import grn
 from src.utils import InputList, OutputList, get_regulators_list_and_products, get_structured_input_output, print_structured_output
 import itertools
 import numpy as np
+from src.synthesis import synthesize
 
 INPUT_CONCENTRATION_MIN: int = 0
 INPUT_CONCENTRATION_MAX: int = 100
@@ -102,6 +103,31 @@ def main():
     print("Full adder:")
     full_adder: grn.grn = get_full_adder()
     results = run_grn(full_adder)
+    print_structured_output(results)
+    print()
+    # Create & run 2-bit adder
+    print("2-bit adder:")
+    two_bit_adder: grn.grn = synthesize(
+        named_grns=[
+            (half_adder, "HA"),
+            (full_adder, "FA"),
+        ],
+        connections=[
+            (half_adder, "C", full_adder, "Cin"),
+        ],
+        inputs={
+            "A0": (half_adder, "A"),
+            "B0": (half_adder, "B"),
+            "A1": (full_adder, "A"),
+            "B1": (full_adder, "B"),
+        },
+        outputs={
+            "Y0": (half_adder, "S"),
+            "Y1": (full_adder, "S"),
+            "Y2": (full_adder, "Cout"),
+        },
+    )
+    results = run_grn(two_bit_adder)
     print_structured_output(results)
     print()
 
