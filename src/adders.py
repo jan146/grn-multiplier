@@ -1,7 +1,8 @@
 import simulator
 import grn
-from src.utils import get_regulators_list_and_products
+from src.utils import InputList, OutputList, get_regulators_list_and_products, get_structured_input_output
 import itertools
+import numpy as np
 
 INPUT_CONCENTRATION_MIN: int = 0
 INPUT_CONCENTRATION_MAX: int = 100
@@ -83,11 +84,15 @@ def run_half_adder():
         (INPUT_CONCENTRATION_MAX, INPUT_CONCENTRATION_MAX),
     ]
     # Run simulation
-    simulator.simulate_sequence(
+    _, Y = simulator.simulate_sequence(
         half_adder,
         input_combinations,
         t_single=T_SINGLE,
     )
+    if not isinstance(Y, np.ndarray):
+        raise Exception(f"Error: Y is not a numpy array {type(Y)=}")
+    # Get actually somewhat readable results
+    results: list[tuple[InputList, OutputList]] = get_structured_input_output(half_adder, input_combinations=input_combinations, Y=Y, t_single=T_SINGLE)
 
 def run_full_adder():
     # Create full adder
@@ -95,11 +100,15 @@ def run_full_adder():
     # Prepare exhaustive list of input combinations
     input_combinations: list[tuple[int,...]] = list(itertools.product([INPUT_CONCENTRATION_MIN, INPUT_CONCENTRATION_MAX], repeat=len(full_adder.input_species_names)))
     # Run simulation
-    simulator.simulate_sequence(
+    _, Y = simulator.simulate_sequence(
         full_adder,
         input_combinations,
         t_single=T_SINGLE,
     )
+    if not isinstance(Y, np.ndarray):
+        raise Exception(f"Error: Y is not a numpy array {type(Y)=}")
+    # Get actually somewhat readable results
+    results: list[tuple[InputList, OutputList]] = get_structured_input_output(full_adder, input_combinations=input_combinations, Y=Y, t_single=T_SINGLE)
 
 def main():
     run_half_adder()
