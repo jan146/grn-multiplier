@@ -3,6 +3,10 @@ import grn
 from src.utils import get_regulators_list_and_products
 import itertools
 
+INPUT_CONCENTRATION_MIN: int = 0
+INPUT_CONCENTRATION_MAX: int = 100
+T_SINGLE: int = 250
+
 def get_full_adder() -> grn.grn:
     # Initialization
     full_adder: grn.grn = grn.grn()
@@ -72,11 +76,24 @@ def main():
     # Create half adder
     half_adder: grn.grn = get_half_adder()
     # Run simulation
-    simulator.simulate_sequence(half_adder, [(0,0), (0,100), (100,0), (100,100)], t_single = 250)
+    simulator.simulate_sequence(
+        half_adder,
+        [
+            (INPUT_CONCENTRATION_MIN, INPUT_CONCENTRATION_MIN),
+            (INPUT_CONCENTRATION_MIN, INPUT_CONCENTRATION_MAX),
+            (INPUT_CONCENTRATION_MAX, INPUT_CONCENTRATION_MIN),
+            (INPUT_CONCENTRATION_MAX, INPUT_CONCENTRATION_MAX),
+        ],
+        t_single = T_SINGLE,
+    )
     # Create full adder
     full_adder: grn.grn = get_full_adder()
     # Run simulation
-    simulator.simulate_sequence(full_adder, list(itertools.product([0, 100], repeat=3)), t_single = 250)
+    simulator.simulate_sequence(
+        full_adder,
+        list(itertools.product([INPUT_CONCENTRATION_MIN, INPUT_CONCENTRATION_MAX], repeat=3)),
+        t_single = T_SINGLE
+    )
 
 if __name__ == "__main__":
     main()
