@@ -91,8 +91,8 @@ def main():
     # Run simulation
     simulator.simulate_sequence(
         full_adder,
-        list(itertools.product([INPUT_CONCENTRATION_MIN, INPUT_CONCENTRATION_MAX], repeat=3)),
-        t_single = T_SINGLE
+        list(itertools.product([INPUT_CONCENTRATION_MIN, INPUT_CONCENTRATION_MAX], repeat=len(full_adder.input_species_names))),
+        t_single = T_SINGLE,
     )
 
 if __name__ == "__main__":
