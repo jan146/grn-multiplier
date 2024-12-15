@@ -16,7 +16,7 @@ def print_structured_output(structured_output: list[tuple[InputList, OutputList]
 
 def get_structured_input_output(grn: grn.grn, input_combinations: list[tuple[int,...]], Y: npt.NDArray, t_single: int) -> list[tuple[InputList, OutputList]]:
     # Get sampling points (time axis)
-    t_samples: npt.NDArray = get_t_samples(num_inputs=len(grn.input_species_names), t_single=t_single)
+    t_samples: npt.NDArray = get_t_samples(num_input_combinations=len(input_combinations), t_single=t_single)
     if len(input_combinations) != t_samples.shape[0]:
         print(f"Warning: {len(input_combinations)=} != {t_samples.shape[0]=}")
     # Dear Santa, please provide me with built-in frozenlist this year, it's much cleaner than lists of tuples
@@ -33,8 +33,8 @@ def get_structured_input_output(grn: grn.grn, input_combinations: list[tuple[int
         results.append((inputs, outputs))
     return results
 
-def get_t_samples(num_inputs: int, t_single: int) -> npt.NDArray:
-    return np.arange(2**num_inputs) * t_single + (int(t_single/2))
+def get_t_samples(num_input_combinations: int, t_single: int) -> npt.NDArray:
+    return np.arange(num_input_combinations) * t_single + (int(t_single/2))
 
 def get_regulators_list_and_products(expression: str | ast.Expr, outputs: list[str]) -> tuple[list[SpeciesList], SpeciesList]:
     """Convert DNF expression and outputs to pair (regulators_list, products)"""
