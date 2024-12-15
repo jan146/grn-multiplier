@@ -150,10 +150,21 @@ class grn:
         edges_inh -= edges_both
 
         edges = list(edges_both) + list(edges_act) + list(edges_inh)
-        colors = ['orange']*len(edges_both) + ['blue']*len(edges_act) + ['red']*len(edges_inh)
+        # colors = ['orange']*len(edges_both) + ['blue']*len(edges_act) + ['red']*len(edges_inh)
 
         G = nx.DiGraph()
         G.add_edges_from(edges)
+
+        edges = list(G.edges)
+        colors = []
+        for edge in edges:
+            if edge in edges_both:
+                colors.append('orange')
+            elif edge in edges_act:
+                colors.append('blue')
+            elif edge in edges_inh:
+                colors.append('red')
+
         nx.draw_networkx(G, pos=nx.circular_layout(G), arrows=True, node_color = 'w', edge_color=colors)
         plt.show()
 
