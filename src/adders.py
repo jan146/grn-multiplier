@@ -1,14 +1,6 @@
-import simulator
 import grn
-from src.utils import InputList, OutputList, get_regulators_list_and_products, get_structured_input_output, print_structured_output
-import itertools
-import numpy as np
+from src.utils import InputList, OutputList, get_regulators_list_and_products, print_structured_output, run_grn
 from src.synthesis import synthesize
-
-INPUT_CONCENTRATION_MIN: int = 0
-INPUT_CONCENTRATION_MAX: int = 100
-T_SINGLE: int = 250
-PLOT_ON: bool = False
 
 def get_full_adder() -> grn.grn:
     # Initialization
@@ -74,22 +66,6 @@ def get_half_adder() -> grn.grn:
     for regulators in regulators_list:
         half_adder.add_gene(10, regulators, products)
     return half_adder
-
-def run_grn(grn: grn.grn) -> list[tuple[InputList, OutputList]]:
-    # Prepare exhaustive list of input combinations
-    input_combinations: list[tuple[int,...]] = list(itertools.product([INPUT_CONCENTRATION_MIN, INPUT_CONCENTRATION_MAX], repeat=len(grn.input_species_names)))
-    # Run simulation
-    _, Y = simulator.simulate_sequence(
-        grn,
-        input_combinations,
-        t_single=T_SINGLE,
-        plot_on=PLOT_ON,
-    )
-    if not isinstance(Y, np.ndarray):
-        raise Exception(f"Error: Y is not a numpy array {type(Y)=}")
-    # Get actually somewhat readable results
-    results: list[tuple[InputList, OutputList]] = get_structured_input_output(grn, input_combinations=input_combinations, Y=Y, t_single=T_SINGLE)
-    return results
 
 def main():
     results: list[tuple[InputList, OutputList]]

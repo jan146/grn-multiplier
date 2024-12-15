@@ -4,6 +4,13 @@ import grn
 import numpy as np
 import numpy.typing as npt
 from typing import TypeAlias
+import itertools
+import simulator
+
+INPUT_CONCENTRATION_MIN: int = 0
+INPUT_CONCENTRATION_MAX: int = 100
+T_SINGLE: int = 250
+PLOT_ON: bool = False
 
 InputType: TypeAlias = tuple[str, float]
 InputList: TypeAlias = list[InputType]
@@ -41,4 +48,20 @@ def get_regulators_list_and_products(expression: str | ast.Expr, outputs: list[s
     regulators_list: list[SpeciesList] = parse_dnf(expression) if isinstance(expression, ast.Expr) else parse_dnf_str(expression)
     products: SpeciesList = [{"name": output} for output in outputs]
     return regulators_list, products
+
+def run_grn(grn: grn.grn) -> list[tuple[InputList, OutputList]]:
+    # Prepare exhaustive list of input combinations
+    input_combinations: list[tuple[int,...]] = list(itertools.product([INPUT_CONCENTRATION_MIN, INPUT_CONCENTRATION_MAX], repeat=len(grn.input_species_names)))
+    # Run simulation
+    _, Y = simulator.simulate_sequence(
+        grn,
+        input_combinations,
+        t_single=T_SINGLE,
+        plot_on=PLOT_ON,
+    )
+    if not isinstance(Y, np.ndarray):
+        raise Exception(f"Error: Y is not a numpy array {type(Y)=}")
+    # Get actually somewhat readable results
+    results: list[tuple[InputList, OutputList]] = get_structured_input_output(grn, input_combinations=input_combinations, Y=Y, t_single=T_SINGLE)
+    return results
 
