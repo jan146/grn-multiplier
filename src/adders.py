@@ -67,22 +67,9 @@ def get_half_adder() -> grn.grn:
         half_adder.add_gene(10, regulators, products)
     return half_adder
 
-def main():
-    results: list[tuple[InputList, OutputList]]
-    # Create & run half adder
-    print("Half adder:")
-    half_adder: grn.grn = get_half_adder()
-    results = run_grn(half_adder)
-    print_structured_output(results)
-    print()
-    # Create & run full adder
-    print("Full adder:")
+def get_two_bit_adder() -> grn.grn:
     full_adder: grn.grn = get_full_adder()
-    results = run_grn(full_adder)
-    print_structured_output(results)
-    print()
-    # Create & run 2-bit adder
-    print("2-bit adder:")
+    half_adder: grn.grn = get_half_adder()
     two_bit_adder: grn.grn = synthesize(
         named_grns=[
             (half_adder, "HA"),
@@ -98,7 +85,13 @@ def main():
             (half_adder, "A"),
         ],
     )
-    results = run_grn(two_bit_adder)
+    return two_bit_adder
+
+def main():
+    # Create & run 2-bit adder
+    print("2-bit adder:")
+    two_bit_adder: grn.grn = get_two_bit_adder()
+    results: list[tuple[InputList, OutputList]] = run_grn(two_bit_adder)
     print_structured_output(results)
     print()
 
