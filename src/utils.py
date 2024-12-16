@@ -17,9 +17,24 @@ InputList: TypeAlias = list[InputType]
 OutputType: TypeAlias = tuple[str, float]
 OutputList: TypeAlias = list[OutputType]
 
-def print_structured_output(structured_output: list[tuple[InputList, OutputList]]):
+def print_structured_output(structured_output: list[tuple[InputList, OutputList]], outputs_override: list[str] | None = None, pretty: bool = True):
+    threshold: float = (INPUT_CONCENTRATION_MIN + INPUT_CONCENTRATION_MAX) / 2.0
     for inputs, outputs in structured_output:
-        print(f"{inputs} -> {outputs}")
+        input_str: list[str] = []
+        for input_name, input_value in inputs:
+            if pretty:
+                input_str.append(f"{input_name}={int(input_value > threshold)}")
+            else:
+                input_str.append(f"{(input_name, input_value)}")
+        output_str: list[str] = []
+        for output_name, output_value in outputs:
+            if not outputs_override is None and output_name not in outputs_override:
+                continue
+            if pretty:
+                output_str.append(f"{output_name}={int(output_value > threshold)}")
+            else:
+                output_str.append(f"{(output_name, output_value)}")
+        print(f"{', '.join(input_str)} -> {', '.join(output_str)}")
 
 def get_structured_input_output(grn: grn.grn, input_combinations: list[tuple[int,...]], Y: npt.NDArray, t_single: int) -> list[tuple[InputList, OutputList]]:
     # Get sampling points (time axis)
