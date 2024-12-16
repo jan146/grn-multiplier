@@ -92,7 +92,11 @@ def main():
     print("2-bit adder:")
     two_bit_adder: grn.grn = get_two_bit_adder()
     results: list[tuple[InputList, OutputList]] = run_grn(two_bit_adder)
-    print_structured_output(results)
+    print_structured_output(
+        results,
+        outputs_override=["HA_S", "FA_Cout", "FA_S"],
+        pretty=True,
+    )
     print()
 
 if __name__ == "__main__":
