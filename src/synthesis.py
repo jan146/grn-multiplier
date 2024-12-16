@@ -6,8 +6,8 @@ ConnectionType: TypeAlias = tuple[grn.grn, str, grn.grn, str]
 LabeledGRN: TypeAlias = tuple[grn.grn, str]
 
 def synthesize(
-        named_grns: list[LabeledGRN],        # source GRN, output name, destination GRN, input name
-        connections: list[ConnectionType],   # GRN, name
+        named_grns: list[LabeledGRN],        # GRN, name
+        connections: list[ConnectionType],   # source GRN, output name, destination GRN, input name
         inputs: list[LabeledGRN],            # (grn, grn input)
     ) -> grn.grn:
 
