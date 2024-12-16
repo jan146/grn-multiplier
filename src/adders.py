@@ -91,17 +91,12 @@ def main():
         connections=[
             (half_adder, "C", full_adder, "Cin"),
         ],
-        inputs={
-            "A0": (half_adder, "A"),
-            "B0": (half_adder, "B"),
-            "A1": (full_adder, "A"),
-            "B1": (full_adder, "B"),
-        },
-        outputs={
-            "Y0": (half_adder, "S"),
-            "Y1": (full_adder, "S"),
-            "Y2": (full_adder, "Cout"),
-        },
+        inputs=[
+            (full_adder, "B"),
+            (full_adder, "A"),
+            (half_adder, "B"),
+            (half_adder, "A"),
+        ],
     )
     results = run_grn(two_bit_adder)
     print_structured_output(results)
