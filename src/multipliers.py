@@ -85,10 +85,10 @@ def get_two_bit_multiplier() -> grn.grn:
     return multiplier
 
 def main():
-    results: list[tuple[InputList, OutputList]]
     # Create & run 2-bit multiplier
+    print("2-bit multiplier:")
     two_bit_multiplier: grn.grn = get_two_bit_multiplier()
-    results = run_grn(two_bit_multiplier)
+    results: list[tuple[InputList, OutputList]] = run_grn(two_bit_multiplier)
     print_structured_output(
         results,
         outputs_override=["M_M3", "M_M2", "M_M1", "M_M0"],
