@@ -1,7 +1,7 @@
 from src.adders import get_half_adder
 import grn
 from src.synthesis import synthesize
-from src.utils import InputList, OutputList, get_regulators_list_and_products, to_structured_output_string, run_grn
+from src.utils import INPUT_CONCENTRATION_MAX, INPUT_CONCENTRATION_MIN, InputList, OutputList, get_regulators_list_and_products, to_structured_output_string, run_grn
 
 def get_two_bit_multiplier() -> grn.grn:
 
@@ -84,6 +84,24 @@ def get_two_bit_multiplier() -> grn.grn:
 
     return multiplier
 
+def to_structured_output_multiplier_specific(simulation_results: list[tuple[InputList, OutputList]], operand_1_inputs: list[str], operand_2_inputs: list[str], outputs: list[str]) -> list[str]:
+    result: list[str] = []
+    threshold: float = (INPUT_CONCENTRATION_MIN + INPUT_CONCENTRATION_MAX) / 2.0
+    for simlation_iteration in simulation_results:
+        inputs_iteration: dict[str, float] = {input_name: value for input_name, value in simlation_iteration[0]}
+        outputs_iteration: dict[str, float] = {output_name: value for output_name, value in simlation_iteration[1]}
+        operand_1_value, operand_2_value, result_value = 0, 0, 0
+        for operand_1_input in operand_1_inputs:
+            operand_1_value = operand_1_value * 2 + (int(inputs_iteration[operand_1_input] > threshold))
+        for operand_2_input in operand_2_inputs:
+            operand_2_value = operand_2_value * 2 + (int(inputs_iteration[operand_2_input] > threshold))
+        for output in outputs:
+            result_value = result_value * 2 + (int(outputs_iteration[output] > threshold))
+        result.append(f"{operand_1_value} * {operand_2_value} = {result_value}")
+        if result_value != operand_1_value * operand_2_value:
+            result[-1] = result[-1] + f" != {operand_1_value * operand_2_value}"
+    return result
+
 def main():
     # Create & run 2-bit multiplier
     print("2-bit multiplier:")
@@ -93,6 +111,13 @@ def main():
         results,
         outputs_override=["M_M3", "M_M2", "M_M1", "M_M0"],
         pretty=True,
+    )
+    print("\n".join(structured_output_string))
+    structured_output_string = to_structured_output_multiplier_specific(
+        simulation_results=results,
+        operand_1_inputs=["M_A1", "M_A0"],
+        operand_2_inputs=["M_B1", "M_B0"],
+        outputs=["M_M3", "M_M2", "M_M1", "M_M0"],
     )
     print("\n".join(structured_output_string))
     print()
