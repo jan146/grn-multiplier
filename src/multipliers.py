@@ -3,7 +3,7 @@ import grn
 from src.synthesis import synthesize
 from src.utils import INPUT_CONCENTRATION_MAX, INPUT_CONCENTRATION_MIN, InputList, OutputList, get_regulators_list_and_products, to_structured_output_string, run_grn
 
-def get_array_multiplier_row(size: int) -> grn.grn:
+def get_array_multiplier_row(size: int, param_kd: float, param_n: float) -> grn.grn:
 
     # Initialization
     row: grn.grn = grn.grn()
@@ -13,7 +13,7 @@ def get_array_multiplier_row(size: int) -> grn.grn:
         row.add_input_species(f"FA{i}_B")
 
     # Add full adders
-    full_adders: list[grn.grn] = [get_full_adder() for _ in range(size)]
+    full_adders: list[grn.grn] = [get_full_adder(param_kd, param_n) for _ in range(size)]
 
     # Prepare connections
     connections: list[tuple[grn.grn, str, grn.grn, str]] = []
@@ -34,10 +34,12 @@ def get_array_multiplier_row(size: int) -> grn.grn:
         inputs=[
             (row, input) for input in row.input_species_names
         ],
+        param_kd=param_kd,
+        param_n=param_n,
     )
     return row
 
-def get_four_bit_multiplier() -> grn.grn:
+def get_four_bit_multiplier(param_kd: float, param_n: float) -> grn.grn:
 
     # Initialization
     multiplier: grn.grn = grn.grn()
@@ -61,7 +63,7 @@ def get_four_bit_multiplier() -> grn.grn:
     multiplier.add_species("Z0", 0.1)
 
     # Rows
-    rows: list[grn.grn] = [get_array_multiplier_row(4) for _ in range(3)]
+    rows: list[grn.grn] = [get_array_multiplier_row(4, param_kd, param_n) for _ in range(3)]
 
     # Add AND gates
     for yi in ["Y3", "Y2", "Y1", "Y0"]:
@@ -70,6 +72,8 @@ def get_four_bit_multiplier() -> grn.grn:
             regulators_list, products = get_regulators_list_and_products(
                 expression=f"{xi} and {yi}",
                 outputs=[f"{xi}{yi}"],
+                param_kd=param_kd,
+                param_n=param_n,
             )
             for regulators in regulators_list:
                 multiplier.add_gene(10, regulators, products)
@@ -108,10 +112,12 @@ def get_four_bit_multiplier() -> grn.grn:
         inputs=[
             (multiplier, input) for input in multiplier.input_species_names
         ],
+        param_kd=param_kd,
+        param_n=param_n,
     )
     return multiplier
 
-def get_two_bit_multiplier() -> grn.grn:
+def get_two_bit_multiplier(param_kd: float, param_n: float) -> grn.grn:
 
     # Initialization
     multiplier: grn.grn = grn.grn()
@@ -131,9 +137,9 @@ def get_two_bit_multiplier() -> grn.grn:
     multiplier.add_species("A1B1", 0.1)
 
     # Half adder for M1
-    half_adder_0: grn.grn = get_half_adder()
+    half_adder_0: grn.grn = get_half_adder(param_kd, param_n)
     # Half adder for M2
-    half_adder_1: grn.grn = get_half_adder()
+    half_adder_1: grn.grn = get_half_adder(param_kd, param_n)
 
     # Add AND gates
     regulators_list, products = get_regulators_list_and_products(
@@ -141,6 +147,8 @@ def get_two_bit_multiplier() -> grn.grn:
             A1 and B0
         """,
         outputs=["A1B0"],
+        param_kd=param_kd,
+        param_n=param_n,
     )
     for regulators in regulators_list:
         multiplier.add_gene(10, regulators, products)
@@ -149,6 +157,8 @@ def get_two_bit_multiplier() -> grn.grn:
             A0 and B1
         """,
         outputs=["A0B1"],
+        param_kd=param_kd,
+        param_n=param_n,
     )
     for regulators in regulators_list:
         multiplier.add_gene(10, regulators, products)
@@ -157,6 +167,8 @@ def get_two_bit_multiplier() -> grn.grn:
             A1 and B1
         """,
         outputs=["A1B1"],
+        param_kd=param_kd,
+        param_n=param_n,
     )
     for regulators in regulators_list:
         multiplier.add_gene(10, regulators, products)
@@ -165,6 +177,8 @@ def get_two_bit_multiplier() -> grn.grn:
             A0 and B0
         """,
         outputs=["M0"],
+        param_kd=param_kd,
+        param_n=param_n,
     )
     for regulators in regulators_list:
         multiplier.add_gene(10, regulators, products)
@@ -188,6 +202,8 @@ def get_two_bit_multiplier() -> grn.grn:
         inputs=[
             (multiplier, input) for input in multiplier.input_species_names
         ],
+        param_kd=param_kd,
+        param_n=param_n,
     )
 
     return multiplier
@@ -217,7 +233,7 @@ def main():
 
     # Create & run 2-bit multiplier
     print("2-bit multiplier:")
-    two_bit_multiplier: grn.grn = get_two_bit_multiplier()
+    two_bit_multiplier: grn.grn = get_two_bit_multiplier(param_kd=5, param_n=2)
     results: list[tuple[InputList, OutputList]] = run_grn(two_bit_multiplier)
     structured_output_string: list[str] = to_structured_output_string(
         results,
@@ -237,7 +253,7 @@ def main():
 
     # Create & run 4-bit multiplier
     print("4-bit multiplier:")
-    four_bit_multiplier: grn.grn = get_four_bit_multiplier()
+    four_bit_multiplier: grn.grn = get_four_bit_multiplier(param_kd=5, param_n=2)
     results = run_grn(four_bit_multiplier)
     structured_output_string = to_structured_output_string(
         results,

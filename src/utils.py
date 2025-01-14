@@ -60,9 +60,9 @@ def get_structured_input_output(grn: grn.grn, input_combinations: list[tuple[int
 def get_t_samples(num_input_combinations: int, t_single: int) -> npt.NDArray:
     return np.arange(num_input_combinations) * t_single + (t_single-1)
 
-def get_regulators_list_and_products(expression: str | ast.Expr, outputs: list[str]) -> tuple[list[SpeciesList], SpeciesList]:
+def get_regulators_list_and_products(expression: str | ast.Expr, outputs: list[str], param_kd: float, param_n: float) -> tuple[list[SpeciesList], SpeciesList]:
     """Convert DNF expression and outputs to pair (regulators_list, products)"""
-    regulators_list: list[SpeciesList] = parse_dnf(expression) if isinstance(expression, ast.Expr) else parse_dnf_str(expression)
+    regulators_list: list[SpeciesList] = parse_dnf(expression, param_kd, param_n) if isinstance(expression, ast.Expr) else parse_dnf_str(expression, param_kd, param_n)
     products: SpeciesList = [{"name": output} for output in outputs]
     return regulators_list, products
 

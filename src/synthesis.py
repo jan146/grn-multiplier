@@ -9,6 +9,8 @@ def synthesize(
         named_grns: list[LabeledGRN],        # GRN, name
         connections: list[ConnectionType],   # source GRN, output name, destination GRN, input name
         inputs: list[LabeledGRN],            # (grn, grn input)
+        param_kd: float,
+        param_n: float,
     ) -> grn.grn:
 
     synthesized: grn.grn = grn.grn()
@@ -42,7 +44,7 @@ def synthesize(
     for src_grn, output_name, dst_grn, input_name in connections:
         src_grn_name: str = grn_to_name[src_grn]
         dst_grn_name: str = grn_to_name[dst_grn]
-        regulators = [{"name": f"{src_grn_name}_{output_name}", "type": 1, "Kd": 5, "n": 2}]
+        regulators = [{"name": f"{src_grn_name}_{output_name}", "type": 1, "Kd": param_kd, "n": param_n}]
         products = [{"name": f"{dst_grn_name}_{input_name}"}]
         synthesized.add_gene(10, regulators, products)
 
