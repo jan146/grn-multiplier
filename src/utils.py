@@ -17,7 +17,8 @@ InputList: TypeAlias = list[InputType]
 OutputType: TypeAlias = tuple[str, float]
 OutputList: TypeAlias = list[OutputType]
 
-def print_structured_output(structured_output: list[tuple[InputList, OutputList]], outputs_override: list[str] | None = None, pretty: bool = True):
+def to_structured_output_string(structured_output: list[tuple[InputList, OutputList]], outputs_override: list[str] | None = None, pretty: bool = True) -> list[str]:
+    result: list[str] = []
     threshold: float = (INPUT_CONCENTRATION_MIN + INPUT_CONCENTRATION_MAX) / 2.0
     for inputs, outputs in structured_output:
         input_str: list[str] = []
@@ -34,7 +35,8 @@ def print_structured_output(structured_output: list[tuple[InputList, OutputList]
                 output_str.append(f"{output_name}={int(output_value > threshold)}")
             else:
                 output_str.append(f"{(output_name, output_value)}")
-        print(f"{', '.join(input_str)} -> {', '.join(output_str)}")
+        result.append(f"{', '.join(input_str)} -> {', '.join(output_str)}")
+    return result
 
 def get_structured_input_output(grn: grn.grn, input_combinations: list[tuple[int,...]], Y: npt.NDArray, t_single: int) -> list[tuple[InputList, OutputList]]:
     # Get sampling points (time axis)

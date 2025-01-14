@@ -1,5 +1,5 @@
 import grn
-from src.utils import InputList, OutputList, get_regulators_list_and_products, print_structured_output, run_grn
+from src.utils import InputList, OutputList, get_regulators_list_and_products, to_structured_output_string, run_grn
 from src.synthesis import synthesize
 
 def get_full_adder() -> grn.grn:
@@ -92,11 +92,12 @@ def main():
     print("2-bit adder:")
     two_bit_adder: grn.grn = get_two_bit_adder()
     results: list[tuple[InputList, OutputList]] = run_grn(two_bit_adder)
-    print_structured_output(
+    structured_output_string: list[str] = to_structured_output_string(
         results,
         outputs_override=["HA_S", "FA_Cout", "FA_S"],
         pretty=True,
     )
+    print("\n".join(structured_output_string))
     print()
 
 if __name__ == "__main__":

@@ -1,7 +1,7 @@
 from src.adders import get_half_adder
 import grn
 from src.synthesis import synthesize
-from src.utils import InputList, OutputList, get_regulators_list_and_products, print_structured_output, run_grn
+from src.utils import InputList, OutputList, get_regulators_list_and_products, to_structured_output_string, run_grn
 
 def get_two_bit_multiplier() -> grn.grn:
 
@@ -89,11 +89,12 @@ def main():
     print("2-bit multiplier:")
     two_bit_multiplier: grn.grn = get_two_bit_multiplier()
     results: list[tuple[InputList, OutputList]] = run_grn(two_bit_multiplier)
-    print_structured_output(
+    structured_output_string: list[str] = to_structured_output_string(
         results,
         outputs_override=["M_M3", "M_M2", "M_M1", "M_M0"],
         pretty=True,
     )
+    print("\n".join(structured_output_string))
     print()
 
 if __name__ == "__main__":
