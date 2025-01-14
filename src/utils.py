@@ -58,7 +58,7 @@ def get_structured_input_output(grn: grn.grn, input_combinations: list[tuple[int
     return results
 
 def get_t_samples(num_input_combinations: int, t_single: int) -> npt.NDArray:
-    return np.arange(num_input_combinations) * t_single + (int(t_single/2))
+    return np.arange(num_input_combinations) * t_single + (t_single-1)
 
 def get_regulators_list_and_products(expression: str | ast.Expr, outputs: list[str]) -> tuple[list[SpeciesList], SpeciesList]:
     """Convert DNF expression and outputs to pair (regulators_list, products)"""
