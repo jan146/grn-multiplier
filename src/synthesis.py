@@ -11,6 +11,8 @@ def synthesize(
         inputs: list[LabeledGRN],            # (grn, grn input)
         param_kd: float,
         param_n: float,
+        param_alpha: float,
+        param_delta: float,
     ) -> grn.grn:
 
     synthesized: grn.grn = grn.grn()
@@ -29,7 +31,7 @@ def synthesize(
     for grn_, grn_name in named_grns:
         for species_name in grn_.species_names:
             if not (grn_, species_name) in inputs:
-                synthesized.add_species(f"{grn_name}_{species_name}", 0.1)
+                synthesized.add_species(f"{grn_name}_{species_name}", param_delta)
     # Finally, add the genes
     for grn_, grn_name in named_grns:
         for gene in grn_.genes:
@@ -46,7 +48,7 @@ def synthesize(
         dst_grn_name: str = grn_to_name[dst_grn]
         regulators = [{"name": f"{src_grn_name}_{output_name}", "type": 1, "Kd": param_kd, "n": param_n}]
         products = [{"name": f"{dst_grn_name}_{input_name}"}]
-        synthesized.add_gene(10, regulators, products)
+        synthesized.add_gene(param_alpha, regulators, products)
 
     return synthesized
 
