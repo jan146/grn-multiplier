@@ -32,7 +32,7 @@ def params_to_accuracy(param_kd: float, param_n: float, param_alpha: float, para
 def four_bit_multiplier_optimization():
     invocation_counter: int = 0
     mixed_set_var: MixedSetVar = MixedSetVar(valid_sets=[PARAM_KD_VALUES, PARAM_N_VALUES, PARAM_ALPHA_VALUES, PARAM_DELTA_VALUES])
-    def obj_func(solution: Any):
+    def obj_func(solution: npt.NDArray):
         nonlocal invocation_counter, mixed_set_var
         param_kd: float = float(mixed_set_var.valid_sets[0][int(solution[0])])
         param_n: int = int(mixed_set_var.valid_sets[1][int(solution[1])])
