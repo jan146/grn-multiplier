@@ -2,6 +2,7 @@ import grn
 from utils import get_regulators_list_and_products, run_grn, print_structured_output
 from synthesis import synthesize
 from adders import get_full_adder
+from utils import generate_truth_table
 
 def get_carry_save_multiplier() -> grn.grn:
     """
@@ -74,12 +75,18 @@ def main():
     print("2x2 Carry-Save Multiplier:")
     carry_save_multiplier: grn.grn = get_carry_save_multiplier()
     results = run_grn(carry_save_multiplier)
-    print_structured_output(
+    printed_result = print_structured_output(
         results,
         outputs_override=["CSM_P3", "CSM_P2", "CSM_P1", "CSM_P0"],
         pretty=True,
     )
-    print()
+    
+    print("Truth Table for 2x2 Carry-Save")
+
+    truth_table = generate_truth_table(2)
+
+    print("compare results")
+    print(truth_table == printed_result)
 
 if __name__ == "__main__":
     main()
