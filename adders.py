@@ -1,6 +1,6 @@
 import grn
-from src.utils import InputList, OutputList, get_regulators_list_and_products, to_structured_output_string, run_grn
-from src.synthesis import synthesize
+from utils import InputList, OutputList, get_regulators_list_and_products, to_structured_output_string, run_grn
+from synthesis import synthesize
 
 def get_full_adder(param_kd: float, param_n: float, param_alpha: float, param_delta: float) -> grn.grn:
     # Initialization

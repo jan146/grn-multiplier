@@ -1,6 +1,6 @@
 from typing import TypeAlias
 import grn
-from src.parser import SpeciesList
+from parser import SpeciesList
 
 ConnectionType: TypeAlias = tuple[grn.grn, str, grn.grn, str]
 LabeledGRN: TypeAlias = tuple[grn.grn, str]

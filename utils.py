@@ -1,4 +1,4 @@
-from src.parser import SpeciesList, parse_dnf, parse_dnf_str
+from parser import SpeciesList, parse_dnf, parse_dnf_str
 import ast
 import grn
 import numpy as np

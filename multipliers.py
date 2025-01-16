@@ -1,7 +1,7 @@
-from src.adders import get_full_adder, get_half_adder
+from adders import get_full_adder, get_half_adder
 import grn
-from src.synthesis import synthesize
-from src.utils import INPUT_CONCENTRATION_MAX, INPUT_CONCENTRATION_MIN, InputList, OutputList, get_regulators_list_and_products, to_structured_output_string, run_grn
+from synthesis import synthesize
+from utils import INPUT_CONCENTRATION_MAX, INPUT_CONCENTRATION_MIN, InputList, OutputList, get_regulators_list_and_products, to_structured_output_string, run_grn
 
 def get_carry_save_multiplier(param_kd: float, param_n: float, param_alpha: float, param_delta: float) -> grn.grn:
     """

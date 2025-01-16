@@ -3,8 +3,8 @@ import grn
 from typing import Any
 from mealpy import MixedSetVar
 from mealpy.evolutionary_based.DE import JADE
-from src.multipliers import get_array_multiplier, to_structured_output_multiplier_specific
-from src.utils import run_grn
+from multipliers import get_array_multiplier, to_structured_output_multiplier_specific
+from utils import run_grn
 import numpy.typing as npt
 import numpy as np
 import time
