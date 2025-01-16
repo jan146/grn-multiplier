@@ -307,25 +307,6 @@ def main():
     )
     print("\n".join(structured_output_string))
     print()
-    # Create & run 2-bit multiplier
-    print("2-bit multiplier:")
-    two_bit_multiplier: grn.grn = get_two_bit_multiplier(param_kd=5, param_n=2, param_alpha=10, param_delta=0.1)
-    results: list[tuple[InputList, OutputList]] = run_grn(two_bit_multiplier)
-    structured_output_string = to_structured_output_string(
-        results,
-        outputs_override=["M_M3", "M_M2", "M_M1", "M_M0"],
-        pretty=True,
-    )
-    print("\n".join(structured_output_string))
-    structured_output_string, accuracy = to_structured_output_multiplier_specific(
-        simulation_results=results,
-        operand_1_inputs=["M_A1", "M_A0"],
-        operand_2_inputs=["M_B1", "M_B0"],
-        outputs=["M_M3", "M_M2", "M_M1", "M_M0"],
-    )
-    print("\n".join(structured_output_string))
-    print(f"Accuracy: {accuracy*100:.1f}%")
-    print()
 
     # Create & run 4-bit multiplier
     print("4-bit multiplier:")
