@@ -9,7 +9,7 @@ import simulator
 
 INPUT_CONCENTRATION_MIN: int = 0
 INPUT_CONCENTRATION_MAX: int = 100
-T_SINGLE: int = 500
+T_SINGLE: int = 1000
 PLOT_ON: bool = False
 
 InputType: TypeAlias = tuple[str, float]
@@ -82,7 +82,7 @@ def generate_truth_table(n: int) -> str:
 
     # Print all results
     results = "\n".join(results)
-    print(results)
+    # print(results)
     results += "\n"
     return results
 

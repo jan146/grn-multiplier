@@ -94,17 +94,22 @@ def main():
     print("3x3 Carry-Save Multiplier:")
     carry_save_multiplier: grn.grn = get_carry_save_multiplier()
     results = run_grn(carry_save_multiplier)
-    results = print_structured_output(
+    output = print_structured_output(
         results,
-        outputs_override=["CSM_P5", "CSM_P4", "CSM_P3", "CSM_P2", "CSM_P1", "CSM_P0"],
+        outputs_override=["CSM_P0", "CSM_P1", "CSM_P2", "CSM_P3", "CSM_P4", "CSM_P5"],
         pretty=True,
     )
     print()
 
+    print("Truth Table for 3x3 Carry-Save")
+    print(output)
     truth = generate_truth_table(3)
 
     print("compare results")
-    print(truth == results)
+    print(truth == output)
+
+    print(truth)
+
 
 if __name__ == "__main__":
     main()

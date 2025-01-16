@@ -75,18 +75,19 @@ def main():
     print("2x2 Carry-Save Multiplier:")
     carry_save_multiplier: grn.grn = get_carry_save_multiplier()
     results = run_grn(carry_save_multiplier)
-    printed_result = print_structured_output(
+    output = print_structured_output(
         results,
         outputs_override=["CSM_P3", "CSM_P2", "CSM_P1", "CSM_P0"],
         pretty=True,
     )
     
-    print("Truth Table for 2x2 Carry-Save")
+    print(output)
 
-    truth_table = generate_truth_table(2)
+    truth = generate_truth_table(2)
 
     print("compare results")
-    print(truth_table == printed_result)
+    print(truth == output)
+    print(truth)
 
 if __name__ == "__main__":
     main()
