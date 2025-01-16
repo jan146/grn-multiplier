@@ -9,7 +9,7 @@ import simulator
 
 INPUT_CONCENTRATION_MIN: int = 0
 INPUT_CONCENTRATION_MAX: int = 100
-T_SINGLE: int = 500
+T_SINGLE: int = 1000
 PLOT_ON: bool = False
 
 InputType: TypeAlias = tuple[str, float]

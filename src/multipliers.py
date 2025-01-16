@@ -100,7 +100,7 @@ def get_four_bit_multiplier(param_kd: float, param_n: float, param_alpha: float,
     connections.append((multiplier, f"X0Y0", multiplier, f"Z0"))
     for i in range(len(rows)-1):
         connections.append((rows[i], f"FA0_S", multiplier, f"Z{i+1}"))
-    for i in range(3):
+    for i in range(4):
         connections.append((rows[2], f"FA{i}_S", multiplier, f"Z{i+len(rows)}"))
     connections.append((rows[2], f"FA{3}_Cout", multiplier, f"Z{7}"))
 
@@ -259,7 +259,7 @@ def main():
 
     # Create & run 4-bit multiplier
     print("4-bit multiplier:")
-    four_bit_multiplier: grn.grn = get_four_bit_multiplier(param_kd=5, param_n=2, param_alpha=10, param_delta=0.1)
+    four_bit_multiplier: grn.grn = get_four_bit_multiplier(param_kd=5, param_n=3, param_alpha=10, param_delta=0.1)
     results = run_grn(four_bit_multiplier)
     structured_output_string = to_structured_output_string(
         results,
