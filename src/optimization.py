@@ -1,63 +1,48 @@
-from mealpy.utils.agent import Agent
+from typing import cast
 import grn
-from typing import Any
-from mealpy import MixedSetVar
-from mealpy.evolutionary_based.DE import JADE
 from src.multipliers import get_array_multiplier, to_structured_output_multiplier_specific
-from src.utils import run_grn
-import numpy.typing as npt
-import numpy as np
-import time
+from src.utils import InputList, OutputList, run_grn
+import itertools
+import multiprocessing
+import os
 
-SEED: int = 123
-DE_EPOCH: int = 10
-DE_POP_SIZE: int = 50
+N_WORKERS: int = cast(int, os.cpu_count())
 
-PARAM_KD_VALUES: npt.NDArray = np.linspace(3, 5, 100)
-PARAM_N_VALUES: npt.NDArray = np.arange(2, 3+1)
-PARAM_ALPHA_VALUES: npt.NDArray = np.linspace(8, 12, 100)
-PARAM_DELTA_VALUES: npt.NDArray = np.linspace(0.05, 0.30, 100)
+PARAM_KD_VALUES: list[int] = list(range(2, 10+1))
+PARAM_N_VALUES: list[int] = list(range(2, 10+1))
+PARAM_ALPHA_VALUES: list[int] = list(range(5, 15+1))
+PARAM_DELTA_VALUES: list[float] = list(map(lambda x: x/10.0, range(10)))
 
-def params_to_accuracy(param_kd: float, param_n: float, param_alpha: float, param_delta: float):
-    four_bit_multiplier: grn.grn = get_array_multiplier(4, param_kd, param_n, param_alpha, param_delta)
-    results = run_grn(four_bit_multiplier)
+def get_multiplier_accuracy(multiplier: grn.grn, size: int) -> float:
+    results: list[tuple[InputList, OutputList]] = run_grn(multiplier)
     _, accuracy = to_structured_output_multiplier_specific(
         simulation_results=results,
-        operand_1_inputs=["M_X3", "M_X2", "M_X1", "M_X0"],
-        operand_2_inputs=["M_Y3", "M_Y2", "M_Y1", "M_Y0"],
-        outputs=["M_Z7", "M_Z6", "M_Z5", "M_Z4", "M_Z3", "M_Z2", "M_Z1", "M_Z0"],
+        operand_1_inputs=[f"M_X{i}" for i in reversed(range(size))],
+        operand_2_inputs=[f"M_Y{i}" for i in reversed(range(size))],
+        outputs=[f"M_Z{i}" for i in reversed(range(2*size))],
     )
     return accuracy
 
-def four_bit_multiplier_optimization():
-    invocation_counter: int = 0
-    mixed_set_var: MixedSetVar = MixedSetVar(valid_sets=[PARAM_KD_VALUES, PARAM_N_VALUES, PARAM_ALPHA_VALUES, PARAM_DELTA_VALUES])
-    def obj_func(solution: npt.NDArray):
-        nonlocal invocation_counter, mixed_set_var
-        param_kd: float = float(mixed_set_var.valid_sets[0][int(solution[0])])
-        param_n: int = int(mixed_set_var.valid_sets[1][int(solution[1])])
-        param_alpha: float = float(mixed_set_var.valid_sets[2][int(solution[2])])
-        param_delta: float = float(mixed_set_var.valid_sets[3][int(solution[3])])
-        t0: float = time.time()
-        accuracy: float = params_to_accuracy(param_kd, param_n, param_alpha, param_delta)
-        invocation_counter += 1
-        print(f"{invocation_counter+1:d}: {param_kd=}, {param_n=}, {param_alpha=}, {param_delta=} -> {accuracy=} ({time.time() - t0:.1f}s)")
-        return accuracy
-    problem: dict[str, Any] = {
-        "obj_func": obj_func,
-        "bounds": mixed_set_var,
-        "minmax": "max",
-        "log_to": "console",
-    }
-    model: JADE = JADE(epoch=DE_EPOCH, pop_size=DE_POP_SIZE)
-    agent: Agent = model.solve(problem, seed=SEED)
-    solution: list[float] = [float(x) for x in agent.solution]
-    fitness: float = float(agent.target.fitness)
-    print(f"Best solution: {solution}, Best fitness: {fitness}")
-    print()
+def print_multiplier_accuracy(params: tuple[int|float,...]) -> float:
+    size, param_kd, param_n, param_alpha, param_delta = params
+    array_multiplier: grn.grn = get_array_multiplier(
+        size=int(size),
+        param_kd=param_kd,
+        param_n=param_n,
+        param_alpha=param_alpha,
+        param_delta=param_delta,
+    )
+    accuracy: float = get_multiplier_accuracy(array_multiplier, int(size))
+    print(f"{param_kd=:02d}, {param_n=:02d}, {param_alpha=:02d}, {param_delta=:.3f} -> {accuracy=:0.1f}")
+    return accuracy
+
+def grid_search(size: int):
+    param_grid: list[tuple[int|float,...]] = list(itertools.product([size], PARAM_KD_VALUES, PARAM_N_VALUES, PARAM_ALPHA_VALUES, PARAM_DELTA_VALUES))
+    with multiprocessing.Pool(processes=N_WORKERS) as pool:
+        results: list[float] = pool.map(print_multiplier_accuracy, param_grid)
 
 def main():
-    four_bit_multiplier_optimization()
+    grid_search(size=2)
 
 if __name__ == "__main__":
     main()
