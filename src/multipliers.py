@@ -333,9 +333,7 @@ def to_structured_output_multiplier_specific(simulation_results: list[tuple[Inpu
             correct += 1
     return result, (correct/len(simulation_results))
 
-def run_and_print_array_multiplier(size: int):
-    print(f"{size}-bit array multiplier:")
-    multiplier: grn.grn = get_array_multiplier(size=size, param_kd=5, param_n=3, param_alpha=10, param_delta=0.1)
+def run_and_print_multiplier(size: int, multiplier: grn.grn):
     results: list[tuple[InputList, OutputList]] = run_grn(multiplier)
     structured_output_string: list[str] = to_structured_output_string(
         results,
@@ -354,29 +352,14 @@ def run_and_print_array_multiplier(size: int):
     print()
 
 def main():
-
-    print("4x4 Carry-Save Multiplier:")
-    carry_save_multiplier: grn.grn = get_carry_save_multiplier(size=4, param_kd=5, param_n=3, param_alpha=10, param_delta=0.1)
-    results: list[tuple[InputList, OutputList]] = run_grn(carry_save_multiplier)
-    structured_output_string: list[str] = to_structured_output_string(
-        results,
-        outputs_override=[f"M_Z{i}" for i in reversed(range(2*4))],
-        pretty=True,
-    )
-    print("\n".join(structured_output_string))
-    structured_output_string, accuracy = to_structured_output_multiplier_specific(
-        simulation_results=results,
-        operand_1_inputs=[f"M_X{i}" for i in reversed(range(4))],
-        operand_2_inputs=[f"M_Y{i}" for i in reversed(range(4))],
-        outputs=[f"M_Z{i}" for i in reversed(range(2*4))],
-    )
-    print("\n".join(structured_output_string))
-    print(f"Accuracy: {accuracy*100:.1f}%")
-    print()
-
-    # Create & run n-bit array multipliers
-    for num_bits in [2,3,4]:
-        run_and_print_array_multiplier(size=num_bits)
+    # Create & run n-bit multipliers
+    for num_bits in [2, 3, 4]:
+        print(f"{num_bits}-bit carry-save multiplier:")
+        carry_save_multiplier: grn.grn = get_array_multiplier(size=num_bits, param_kd=5, param_n=3, param_alpha=10, param_delta=0.1)
+        run_and_print_multiplier(num_bits, carry_save_multiplier)
+        print(f"{num_bits}-bit array multiplier:")
+        array_multiplier: grn.grn = get_carry_save_multiplier(size=num_bits, param_kd=5, param_n=3, param_alpha=10, param_delta=0.1)
+        run_and_print_multiplier(num_bits, array_multiplier)
 
 if __name__ == "__main__":
     main()
