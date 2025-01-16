@@ -3,75 +3,113 @@ import grn
 from src.synthesis import synthesize
 from src.utils import INPUT_CONCENTRATION_MAX, INPUT_CONCENTRATION_MIN, InputList, OutputList, get_regulators_list_and_products, to_structured_output_string, run_grn
 
-def get_carry_save_multiplier(param_kd: float, param_n: float, param_alpha: float, param_delta: float) -> grn.grn:
-    """
-    Implements a 2x2 Carry Save Multiplier using the existing 2-bit multiplier and adders.
-    """
-    
-    # Initialization of the carry-save multiplier GRN
-    csm: grn.grn = grn.grn()
-    
-    # Inputs (2 bits each for two binary numbers A and B)
-    csm.add_input_species("A1")
-    csm.add_input_species("A0")
-    csm.add_input_species("B1")
-    csm.add_input_species("B0")
-    
-    # Outputs (4 bits for the final result)
-    csm.add_species("P3", param_delta)  # Most significant bit
-    csm.add_species("P2", param_delta)
-    csm.add_species("P1", param_delta)
-    csm.add_species("P0", param_delta)  # Least significant bit
-    
-    # Internal nodes for intermediate partial products
-    for i in range(2):  # A1, A0
-        for j in range(2):  # B1, B0
-            csm.add_species(f"PP{i}{j}", param_delta)  # Partial Product (PPij = Ai * Bj)
-    
-    # AND gates for each bit of A and B to create the partial products (PPij = Ai * Bj)
-    for i in range(2):
-        for j in range(2):
-            regulators_list, products = get_regulators_list_and_products(
-                expression=f"A{i} and B{j}",
-                outputs=[f"PP{i}{j}"],
-                param_kd=param_kd,
-                param_n=param_n,
-            )
-            for regulators in regulators_list:
-                csm.add_gene(param_alpha, regulators, products)
-    
-    # Use Full Adders to sum partial products column by column
-    
-    full_adder_0: grn.grn = get_full_adder(param_kd, param_n, param_alpha, param_delta)
-    full_adder_1: grn.grn = get_full_adder(param_kd, param_n, param_alpha, param_delta)
-    
-    csm = synthesize(
+def get_carry_save_multiplier_row(size: int, param_kd: float, param_n: float, param_alpha: float, param_delta: float) -> grn.grn:
+    # Initialization
+    row: grn.grn = grn.grn()
+    # Inputs
+    for i in range(size):
+        row.add_input_species(f"FA{i}_A")
+        row.add_input_species(f"FA{i}_B")
+        row.add_input_species(f"FA{i}_Cin")
+
+    # Add full adders
+    full_adders: list[grn.grn] = [get_full_adder(param_kd, param_n, param_alpha, param_delta) for _ in range(size)]
+
+    # Prepare connections
+    connections: list[tuple[grn.grn, str, grn.grn, str]] = []
+    # Input connections
+    for i in range(size):
+        connections.append((row, f"FA{i}_A", full_adders[i], "A"))
+        connections.append((row, f"FA{i}_B", full_adders[i], "B"))
+        connections.append((row, f"FA{i}_Cin", full_adders[i], "Cin"))
+
+    # Synthesis
+    row = synthesize(
         named_grns=[
-            (csm, "CSM"),
-            (full_adder_0, "FA0"),
-            (full_adder_1, "FA1"),
+            (row, "R"), *((full_adder, f"FA{i}") for i, full_adder in enumerate(full_adders))
         ],
-        connections=[
-            (csm, "PP00", csm, "P0"),  # First bit is just PP00
-            (csm, "PP10", full_adder_0, "A"),
-            (csm, "PP01", full_adder_0, "B"),
-            (full_adder_0, "S", csm, "P1"),
-            (full_adder_0, "Cout", full_adder_1, "A"),
-            (csm, "PP11", full_adder_1, "B"),
-            (full_adder_1, "S", csm, "P2"),
-            (full_adder_1, "Cout", csm, "P3"),  # Carry-out becomes the most significant bit
-        ],
+        connections=connections,
         inputs=[
-            (csm, "A1"), (csm, "A0"),
-            (csm, "B1"), (csm, "B0"),
+            (row, input) for input in row.input_species_names
         ],
         param_kd=param_kd,
         param_n=param_n,
         param_alpha=param_alpha,
         param_delta=param_delta,
     )
-    
-    return csm
+    return row
+
+def get_carry_save_multiplier(size: int, param_kd: float, param_n: float, param_alpha: float, param_delta: float) -> grn.grn:
+    # Initialization
+    multiplier: grn.grn = grn.grn()
+    # Inputs
+    for i in reversed(range(size)):
+        multiplier.add_input_species(f"X{i}")
+    for i in reversed(range(size)):
+        multiplier.add_input_species(f"Y{i}")
+    # Outputs
+    for i in reversed(range(2*size)):
+        multiplier.add_species(f"Z{i}", param_delta)
+
+    # Add AND gates
+    for yi in [f"Y{i}" for i in range(size)]:
+        for xj in [f"X{j}" for j in range(size)]:
+            multiplier.add_species(f"{xj}{yi}", param_delta)
+            regulators_list, products = get_regulators_list_and_products(
+                expression=f"{xj} and {yi}",
+                outputs=[f"{xj}{yi}"],
+                param_kd=param_kd,
+                param_n=param_n,
+            )
+            for regulators in regulators_list:
+                multiplier.add_gene(param_alpha, regulators, products)
+
+    # Rows (last one is different)
+    rows: list[grn.grn] = [get_carry_save_multiplier_row(size, param_kd, param_n, param_alpha, param_delta) for _ in range(size-1)] + [get_array_multiplier_row(size, param_kd, param_n, param_alpha, param_delta)]
+
+    # Prepare connections
+    connections: list[tuple[grn.grn, str, grn.grn, str]] = []
+    # Connect XiY0
+    connections.append((multiplier, f"X0Y0", multiplier, f"Z0"))
+    for j in range(size-1):
+        connections.append((multiplier, f"X{j+1}Y0", rows[0], f"FA{j}_A"))
+    # Connect other inputs
+    for i in range(len(rows)-1):
+        for j in range(size):
+            connections.append((multiplier, f"X{j}Y{i+1}", rows[i], f"FA{j}_B"))
+    # Add vertical connections
+    for i in range(len(rows)-1):
+        for j in range(size-1):
+            connections.append((rows[i], f"FA{j+1}_S", rows[i+1], f"FA{j}_A"))
+    # Add diagonal connections (except last row)
+    for i in range(size-2):
+        for j in range(size):
+            connections.append((rows[i], f"FA{j}_Cout", rows[i+1], f"FA{j}_Cin"))
+    # Add diagonal connection (last row)
+    for j in range(size):
+        connections.append((rows[-2], f"FA{j}_Cout", rows[-1], f"FA{j}_B"))
+    # Connect outputs
+    for i in range(len(rows)-1):
+        connections.append((rows[i], f"FA0_S", multiplier, f"Z{i+1}"))
+    for j in range(size):
+        connections.append((rows[-1], f"FA{j}_S", multiplier, f"Z{j+len(rows)}"))
+
+    # Synthesis
+    multiplier = synthesize(
+        named_grns=[
+            (multiplier, "M"),
+            *((row, f"ROW{i}") for i, row in enumerate(rows)),
+        ],
+        connections=connections,
+        inputs=[
+            (multiplier, input) for input in multiplier.input_species_names
+        ],
+        param_kd=param_kd,
+        param_n=param_n,
+        param_alpha=param_alpha,
+        param_delta=param_delta,
+    )
+    return multiplier
 
 def get_array_multiplier_row(size: int, param_kd: float, param_n: float, param_alpha: float, param_delta: float) -> grn.grn:
 
@@ -317,20 +355,20 @@ def run_and_print_array_multiplier(size: int):
 
 def main():
 
-    print("2x2 Carry-Save Multiplier:")
-    carry_save_multiplier: grn.grn = get_carry_save_multiplier(param_kd=5, param_n=2, param_alpha=10, param_delta=0.1)
+    print("4x4 Carry-Save Multiplier:")
+    carry_save_multiplier: grn.grn = get_carry_save_multiplier(size=4, param_kd=5, param_n=3, param_alpha=10, param_delta=0.1)
     results: list[tuple[InputList, OutputList]] = run_grn(carry_save_multiplier)
     structured_output_string: list[str] = to_structured_output_string(
         results,
-        outputs_override=["CSM_P3", "CSM_P2", "CSM_P1", "CSM_P0"],
+        outputs_override=[f"M_Z{i}" for i in reversed(range(2*4))],
         pretty=True,
     )
     print("\n".join(structured_output_string))
     structured_output_string, accuracy = to_structured_output_multiplier_specific(
         simulation_results=results,
-        operand_1_inputs=[f"CSM_A{i}" for i in reversed(range(2))],
-        operand_2_inputs=[f"CSM_B{i}" for i in reversed(range(2))],
-        outputs=[f"CSM_P{i}" for i in reversed(range(2*2))],
+        operand_1_inputs=[f"M_X{i}" for i in reversed(range(4))],
+        operand_2_inputs=[f"M_Y{i}" for i in reversed(range(4))],
+        outputs=[f"M_Z{i}" for i in reversed(range(2*4))],
     )
     print("\n".join(structured_output_string))
     print(f"Accuracy: {accuracy*100:.1f}%")
