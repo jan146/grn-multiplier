@@ -3,6 +3,76 @@ import grn
 from src.synthesis import synthesize
 from src.utils import INPUT_CONCENTRATION_MAX, INPUT_CONCENTRATION_MIN, InputList, OutputList, get_regulators_list_and_products, to_structured_output_string, run_grn
 
+def get_carry_save_multiplier(param_kd: float, param_n: float, param_alpha: float, param_delta: float) -> grn.grn:
+    """
+    Implements a 2x2 Carry Save Multiplier using the existing 2-bit multiplier and adders.
+    """
+    
+    # Initialization of the carry-save multiplier GRN
+    csm: grn.grn = grn.grn()
+    
+    # Inputs (2 bits each for two binary numbers A and B)
+    csm.add_input_species("A1")
+    csm.add_input_species("A0")
+    csm.add_input_species("B1")
+    csm.add_input_species("B0")
+    
+    # Outputs (4 bits for the final result)
+    csm.add_species("P3", param_delta)  # Most significant bit
+    csm.add_species("P2", param_delta)
+    csm.add_species("P1", param_delta)
+    csm.add_species("P0", param_delta)  # Least significant bit
+    
+    # Internal nodes for intermediate partial products
+    for i in range(2):  # A1, A0
+        for j in range(2):  # B1, B0
+            csm.add_species(f"PP{i}{j}", param_delta)  # Partial Product (PPij = Ai * Bj)
+    
+    # AND gates for each bit of A and B to create the partial products (PPij = Ai * Bj)
+    for i in range(2):
+        for j in range(2):
+            regulators_list, products = get_regulators_list_and_products(
+                expression=f"A{i} and B{j}",
+                outputs=[f"PP{i}{j}"],
+                param_kd=param_kd,
+                param_n=param_n,
+            )
+            for regulators in regulators_list:
+                csm.add_gene(param_alpha, regulators, products)
+    
+    # Use Full Adders to sum partial products column by column
+    
+    full_adder_0: grn.grn = get_full_adder(param_kd, param_n, param_alpha, param_delta)
+    full_adder_1: grn.grn = get_full_adder(param_kd, param_n, param_alpha, param_delta)
+    
+    csm = synthesize(
+        named_grns=[
+            (csm, "CSM"),
+            (full_adder_0, "FA0"),
+            (full_adder_1, "FA1"),
+        ],
+        connections=[
+            (csm, "PP00", csm, "P0"),  # First bit is just PP00
+            (csm, "PP10", full_adder_0, "A"),
+            (csm, "PP01", full_adder_0, "B"),
+            (full_adder_0, "S", csm, "P1"),
+            (full_adder_0, "Cout", full_adder_1, "A"),
+            (csm, "PP11", full_adder_1, "B"),
+            (full_adder_1, "S", csm, "P2"),
+            (full_adder_1, "Cout", csm, "P3"),  # Carry-out becomes the most significant bit
+        ],
+        inputs=[
+            (csm, "A1"), (csm, "A0"),
+            (csm, "B1"), (csm, "B0"),
+        ],
+        param_kd=param_kd,
+        param_n=param_n,
+        param_alpha=param_alpha,
+        param_delta=param_delta,
+    )
+    
+    return csm
+
 def get_array_multiplier_row(size: int, param_kd: float, param_n: float, param_alpha: float, param_delta: float) -> grn.grn:
 
     # Initialization
@@ -237,11 +307,21 @@ def to_structured_output_multiplier_specific(simulation_results: list[tuple[Inpu
 
 def main():
 
+    print("2x2 Carry-Save Multiplier:")
+    carry_save_multiplier: grn.grn = get_carry_save_multiplier(param_kd=5, param_n=2, param_alpha=10, param_delta=0.1)
+    results = run_grn(carry_save_multiplier)
+    structured_output_string: list[str] = to_structured_output_string(
+        results,
+        outputs_override=["CSM_P3", "CSM_P2", "CSM_P1", "CSM_P0"],
+        pretty=True,
+    )
+    print("\n".join(structured_output_string))
+    print()
     # Create & run 2-bit multiplier
     print("2-bit multiplier:")
     two_bit_multiplier: grn.grn = get_two_bit_multiplier(param_kd=5, param_n=2, param_alpha=10, param_delta=0.1)
     results: list[tuple[InputList, OutputList]] = run_grn(two_bit_multiplier)
-    structured_output_string: list[str] = to_structured_output_string(
+    structured_output_string = to_structured_output_string(
         results,
         outputs_override=["M_M3", "M_M2", "M_M1", "M_M0"],
         pretty=True,
