@@ -326,6 +326,14 @@ def main():
         pretty=True,
     )
     print("\n".join(structured_output_string))
+    structured_output_string, accuracy = to_structured_output_multiplier_specific(
+        simulation_results=results,
+        operand_1_inputs=[f"CSM_A{i}" for i in reversed(range(2))],
+        operand_2_inputs=[f"CSM_B{i}" for i in reversed(range(2))],
+        outputs=[f"CSM_P{i}" for i in reversed(range(2*2))],
+    )
+    print("\n".join(structured_output_string))
+    print(f"Accuracy: {accuracy*100:.1f}%")
     print()
 
     # Create & run n-bit array multipliers
