@@ -3,7 +3,7 @@ import grn
 from typing import Any
 from mealpy import MixedSetVar
 from mealpy.evolutionary_based.DE import JADE
-from src.multipliers import get_four_bit_multiplier, to_structured_output_multiplier_specific
+from src.multipliers import get_array_multiplier, to_structured_output_multiplier_specific
 from src.utils import run_grn
 import numpy.typing as npt
 import numpy as np
@@ -19,7 +19,7 @@ PARAM_ALPHA_VALUES: npt.NDArray = np.linspace(8, 12, 100)
 PARAM_DELTA_VALUES: npt.NDArray = np.linspace(0.05, 0.30, 100)
 
 def params_to_accuracy(param_kd: float, param_n: float, param_alpha: float, param_delta: float):
-    four_bit_multiplier: grn.grn = get_four_bit_multiplier(param_kd, param_n, param_alpha, param_delta)
+    four_bit_multiplier: grn.grn = get_array_multiplier(4, param_kd, param_n, param_alpha, param_delta)
     results = run_grn(four_bit_multiplier)
     _, accuracy = to_structured_output_multiplier_specific(
         simulation_results=results,

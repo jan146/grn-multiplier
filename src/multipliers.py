@@ -111,39 +111,29 @@ def get_array_multiplier_row(size: int, param_kd: float, param_n: float, param_a
     )
     return row
 
-def get_four_bit_multiplier(param_kd: float, param_n: float, param_alpha: float, param_delta: float) -> grn.grn:
+def get_array_multiplier(size: int, param_kd: float, param_n: float, param_alpha: float, param_delta: float) -> grn.grn:
 
     # Initialization
     multiplier: grn.grn = grn.grn()
     # Inputs
-    multiplier.add_input_species("X3")
-    multiplier.add_input_species("X2")
-    multiplier.add_input_species("X1")
-    multiplier.add_input_species("X0")
-    multiplier.add_input_species("Y3")
-    multiplier.add_input_species("Y2")
-    multiplier.add_input_species("Y1")
-    multiplier.add_input_species("Y0")
+    for i in reversed(range(size)):
+        multiplier.add_input_species(f"X{i}")
+    for i in reversed(range(size)):
+        multiplier.add_input_species(f"Y{i}")
     # Outputs
-    multiplier.add_species("Z7", param_delta)
-    multiplier.add_species("Z6", param_delta)
-    multiplier.add_species("Z5", param_delta)
-    multiplier.add_species("Z4", param_delta)
-    multiplier.add_species("Z3", param_delta)
-    multiplier.add_species("Z2", param_delta)
-    multiplier.add_species("Z1", param_delta)
-    multiplier.add_species("Z0", param_delta)
+    for i in reversed(range(2*size)):
+        multiplier.add_species(f"Z{i}", param_delta)
 
     # Rows
-    rows: list[grn.grn] = [get_array_multiplier_row(4, param_kd, param_n, param_alpha, param_delta) for _ in range(3)]
+    rows: list[grn.grn] = [get_array_multiplier_row(size, param_kd, param_n, param_alpha, param_delta) for _ in range(size-1)]
 
     # Add AND gates
-    for yi in ["Y3", "Y2", "Y1", "Y0"]:
-        for xi in ["X3", "X2", "X1", "X0"]:
-            multiplier.add_species(f"{xi}{yi}", param_delta)
+    for yi in [f"Y{i}" for i in range(size)]:
+        for xj in [f"X{j}" for j in range(size)]:
+            multiplier.add_species(f"{xj}{yi}", param_delta)
             regulators_list, products = get_regulators_list_and_products(
-                expression=f"{xi} and {yi}",
-                outputs=[f"{xi}{yi}"],
+                expression=f"{xj} and {yi}",
+                outputs=[f"{xj}{yi}"],
                 param_kd=param_kd,
                 param_n=param_n,
             )
@@ -153,26 +143,26 @@ def get_four_bit_multiplier(param_kd: float, param_n: float, param_alpha: float,
     # Prepare connections
     connections: list[tuple[grn.grn, str, grn.grn, str]] = []
     # First row FA{i}_A
-    for i in range(3):
+    for i in range(size-1):
         connections.append((multiplier, f"X{i+1}Y0", rows[0], f"FA{i}_A"))
     # FA{i}_B
-    for i in range(3):
-        for j in range(4):
+    for i in range(size-1):
+        for j in range(size):
             connections.append((multiplier, f"X{j}Y{i+1}", rows[i], f"FA{j}_B"))
     # Row carry
-    for i in range(2):
-        connections.append((rows[i], f"FA{3}_Cout", rows[i+1], f"FA{3}_A"))
+    for i in range(len(rows)-1):
+        connections.append((rows[i], f"FA{size-1}_Cout", rows[i+1], f"FA{size-1}_A"))
     # Row results
     for i in range(len(rows)-1):
-        for j in range(3):
+        for j in range(size-1):
             connections.append((rows[i], f"FA{j+1}_S", rows[i+1], f"FA{j}_A"))
     # Final outputs
     connections.append((multiplier, f"X0Y0", multiplier, f"Z0"))
     for i in range(len(rows)-1):
         connections.append((rows[i], f"FA0_S", multiplier, f"Z{i+1}"))
-    for i in range(4):
-        connections.append((rows[2], f"FA{i}_S", multiplier, f"Z{i+len(rows)}"))
-    connections.append((rows[2], f"FA{3}_Cout", multiplier, f"Z{7}"))
+    for i in range(size):
+        connections.append((rows[-1], f"FA{i}_S", multiplier, f"Z{i+len(rows)}"))
+    connections.append((rows[-1], f"FA{size-1}_Cout", multiplier, f"Z{2*size-1}"))
 
     # Synthesis
     multiplier = synthesize(
@@ -339,11 +329,11 @@ def main():
 
     # Create & run 4-bit multiplier
     print("4-bit multiplier:")
-    four_bit_multiplier: grn.grn = get_four_bit_multiplier(param_kd=5, param_n=3, param_alpha=10, param_delta=0.1)
+    four_bit_multiplier: grn.grn = get_array_multiplier(size=4, param_kd=5, param_n=3, param_alpha=10, param_delta=0.1)
     results = run_grn(four_bit_multiplier)
     structured_output_string = to_structured_output_string(
         results,
-        outputs_override=[f"M_Z{i}" for i in range(8)],
+        outputs_override=[f"M_Z{i}" for i in range(2*4)],
         pretty=True,
     )
     print("\n".join(structured_output_string))
