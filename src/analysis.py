@@ -84,6 +84,7 @@ def main():
     # Prepare plots
     fig, axs = plt.subplots(nrows=len(param_delta_values), ncols=len(param_alpha_values))
     fig.set_dpi(FIG_DPI)
+    fig.tight_layout()
     fig.set_size_inches(FIG_SIZE_W, FIG_SIZE_H)
     plt.subplots_adjust(wspace=WSPACE, hspace=HSPACE)
     for i, delta in enumerate(param_delta_values):
