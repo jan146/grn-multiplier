@@ -5,14 +5,14 @@ import math
 import matplotlib.pyplot as plt
 
 SPACE_SIZE_COEFFICIENT: float = 20.0
-HSPACE: float = 1.2
+HSPACE: float = 0.5
 WSPACE: float = 0.0
 FIG_SIZE_W: int = 16
-FIG_SIZE_H: int = 32
+FIG_SIZE_H: int = 20
 FIG_DPI: int = 100
-FONTSIZE_TITLE: int = 10
-FONTSIZE_AXIS_LABELS: int = 6
-FONTSIZE_TICK_LABELS: int = 6
+FONTSIZE_TITLE: int = 14
+FONTSIZE_AXIS_LABELS: int = 12
+FONTSIZE_TICK_LABELS: int = 12
 
 def read_to_dataframe(filename: str) -> pd.DataFrame:
     data: list[dict[str, float]] = []
