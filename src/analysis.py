@@ -77,6 +77,8 @@ def main():
         param_alpha_min, param_alpha_max = math.floor(mean.param_alpha), math.ceil(mean.param_alpha)
     if param_delta_max - param_delta_min < 1:
         param_delta_min, param_delta_max = math.floor(10*mean.param_delta), math.ceil(10*mean.param_delta)
+        if param_delta_min == param_delta_max:
+            param_delta_max += 1
 
     # Get all possible values for each parameter
     param_kd_values: list[int] = list(range(param_kd_min, param_kd_max+1))
