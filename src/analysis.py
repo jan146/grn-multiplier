@@ -48,6 +48,9 @@ def get_single_plot_data(content: pd.DataFrame, alpha: int, delta: float, param_
 
 def main():
 
+    if len(sys.argv) < 2:
+        print("Usage: python -m src.analysis out.array-2.txt")
+        exit(1)
     # Read file and find working combinations
     filename: str = sys.argv[1]
     content: pd.DataFrame = read_to_dataframe(filename)
