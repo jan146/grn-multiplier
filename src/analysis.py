@@ -62,6 +62,19 @@ def main():
     param_delta_min, param_delta_max = float(mean.param_delta - (SPACE_SIZE_COEFFICIENT/20.0*mean_adjusted_std.param_delta)), float(mean.param_delta + (SPACE_SIZE_COEFFICIENT/20.0*mean_adjusted_std.param_delta))
     param_delta_min, param_delta_max = math.ceil(10*max(0, param_delta_min)), math.floor(10*param_delta_max)
     
+    param_kd_min, param_kd_max = max(int(content.min().param_kd), param_kd_min), min(int(content.max().param_kd), param_kd_max)
+    param_n_min, param_n_max = max(int(content.min().param_n), param_n_min), min(int(content.max().param_n), param_n_max)
+    param_alpha_min, param_alpha_max = max(int(content.min().param_alpha), param_alpha_min), min(int(content.max().param_alpha), param_alpha_max)
+
+    if param_kd_max - param_kd_min < 1:
+        param_kd_min, param_kd_max = math.floor(mean.param_kd), math.ceil(mean.param_kd)
+    if param_n_max - param_n_min < 1:
+        param_n_min, param_n_max = math.floor(mean.param_n), math.ceil(mean.param_n)
+    if param_alpha_max - param_alpha_min < 1:
+        param_alpha_min, param_alpha_max = math.floor(mean.param_alpha), math.ceil(mean.param_alpha)
+    if param_delta_max - param_delta_min < 1:
+        param_delta_min, param_delta_max = math.floor(10*mean.param_delta), math.ceil(10*mean.param_delta)
+
     # Get all possible values for each parameter
     param_kd_values: list[int] = list(range(param_kd_min, param_kd_max+1))
     param_n_values: list[int] = list(range(param_n_min, param_n_max+1))
