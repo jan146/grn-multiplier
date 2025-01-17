@@ -39,8 +39,8 @@ def print_multiplier_accuracy(params: tuple[int|float,...]) -> float:
         param_delta=param_delta,
     )
     accuracy: float = get_multiplier_accuracy(array_multiplier, int(size))
-    print(f"[{index.value+1}/{PARAM_GRID_SIZE}]: {param_kd=:02d}, {param_n=:02d}, {param_alpha=:02d}, {param_delta=:.3f} -> {accuracy=:0.1f}")
     with lock:
+        print(f"[{index.value+1}/{PARAM_GRID_SIZE}]: {param_kd=:02d}, {param_n=:02d}, {param_alpha=:02d}, {param_delta=:.3f} -> {accuracy=:0.1f}")
         index.value += 1
     return accuracy
 
