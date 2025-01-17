@@ -5,7 +5,11 @@ from scipy.integrate import solve_ivp
 import pandas as pd
 import os 
 
+def get_model_name() -> str:
+    return f"models/model_pid_{os.getpid()}"
 
+def get_model_file() -> str:
+    return f"{get_model_name()}.py"
 
 def generate_bin_vectors(INS_num):
     vects = []
@@ -146,8 +150,9 @@ def simulate_single(grn, IN, model=False, INS_factor=1, t_end=100, plot_on=True,
 
 def simulate_sequence(grn, IN_seq, model=False, INS_factor=1, t_single=100, plot_on=True, legend=True, xlabel='time [a.u.]', ylabel='concentrations [a.u.]'):
     if type(model) == bool:
-        grn.generate_model()
-        model = 'model'
+        grn.generate_model(fname=get_model_file())
+        # model = 'model'
+        model = get_model_name()
     if type(model)==str:        
         # read the model module    
         model_module = importlib.import_module(model.replace(os.sep,'.')) 
@@ -189,4 +194,6 @@ def simulate_sequence(grn, IN_seq, model=False, INS_factor=1, t_single=100, plot
         
         plt.show()
 
+    if os.path.exists(get_model_file()):
+        os.remove(get_model_file())
     return T,Y
